@@ -12,8 +12,8 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
-      - "80:80"
-      - "8080:8080"
+      #- "80:80"
+      #- "8080:8080"
     #volumes:
       #- "ba-volumes/docker.sock:/var/run/docker.sock:ro"
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
     image: "docker.elastic.co/beats/filebeat:7.2.0"
     user: root
     volumes:
-      - /dockertest/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /dockertest/filebeat-cloud.yml:/usr/share/filebeat/filebeat.yml:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
