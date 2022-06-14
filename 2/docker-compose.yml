@@ -1,0 +1,73 @@
+version: '3'
+
+networks:
+  backend:
+    ipam:
+      driver: default
+      config:
+       - subnet: 10.0.1.0/24
+
+services:
+
+  pihole:
+    container_name: pihole
+    image: tulpafred/swiss-army-knife:pihole
+    networks:
+      backend:
+        ipv4_address: 10.0.1.10
+    ports:
+      #- '53:53/tcp'
+      #- '53:53/udp'
+      # Only required if you are using Pi-hole as your DHCP server
+      #- '67:67/udp' 
+      - '80:80/tcp'
+      - '443:443/tcp'
+    environment:
+      TZ: 'Europe/Berlin'
+      #WEBPASSWORD: 'test'
+      TEMPERATUREUNIT: 'c'
+      #IPCONFIG
+      PIHOLE_DNS_: '192.168.102.254;fd00::5:464e:6dff:fe69:7c2f'
+      #CONDITIONAL FORWARDING
+      REV_SERVER: 'true'
+      REV_SERVER_DOMAIN: 'fritz.box'
+      REV_SERVER_TARGET: '192.168.102.254'
+      REV_SERVER_CIDR: '192.168.102.0/24'
+    # Volumes store your data between container upgrades, only needed for image updates
+    # volumes:
+    #     - './etc-pihole:/etc/pihole'
+    #     - './etc-dnsmasq.d:/etc/dnsmasq.d'  
+    # Recommended but not required (DHCP needs NET_ADMIN)     
+    cap_add:
+      - NET_ADMIN   
+    restart: unless-stopped
+
+  wireguard:
+    container_name: wireguard
+    image: tulpafred/swiss-army-knife:wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      backend:
+        ipv4_address: 10.0.1.11
+    ports: 
+      - 51820:51820/udp
+    environment: 
+      #PEERS: fulliphone splitiphone fullgeneric splitgeneric
+      SERVERURL: 'vpn.tulpow.de'
+      SERVERPORT: 51820
+      PEERDNS: '10.0.1.10'
+      TZ: 'Europe/Berlin'
+    restart: unless-stopped
+    #volumes:
+      #- './config-wireguard:/config'
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    user: root
+    volumes:
+      - /dockertest/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
