@@ -1,0 +1,44 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.7"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    #volumes:
+      #- "ba-volumes/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+
+  smokeping:
+    image: lscr.io/linuxserver/smokeping
+    container_name: smokeping
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    #volumes:
+      #- ba-volumes/smokeping/config:/config
+      #- ba-volumes/smokeping/data:/data
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`smokeping.ba.tulpow.de`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    user: root
+    volumes:
+      - /dockertest/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
