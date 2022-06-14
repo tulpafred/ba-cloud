@@ -34,11 +34,11 @@ services:
       - "traefik.http.routers.whoami.rule=Host(`smokeping.ba.tulpow.de`)"
       - "traefik.http.routers.whoami.entrypoints=web"
 
-  filebeat:
-    image: "docker.elastic.co/beats/filebeat:8.2.2"
-    user: root
-    volumes:
-      - /dockertest/filebeat-cloud.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/lib/docker:/var/lib/docker:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
+#  filebeat:
+#    image: "docker.elastic.co/beats/filebeat:8.2.2"
+#    user: root
+#    volumes:
+#      - /dockertest/filebeat-cloud.yml:/usr/share/filebeat/filebeat.yml:ro
+#      - /var/lib/docker:/var/lib/docker:ro
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    restart: unless-stopped
